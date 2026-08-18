@@ -1,0 +1,112 @@
+{
+  "trace_id": "trace-20240912-fin-0087",
+  "agent_id": "agent-fin-007",
+  "started_at": "2024-09-12T13:00:01Z",
+  "ended_at": "2024-09-12T13:00:47Z",
+  "steps": [
+    {
+      "step": 1,
+      "tool": "portfolio_reader",
+      "status": "success",
+      "input": {"client_id": "CL-4492"},
+      "output": {
+        "total_aum": 12500000,
+        "positions": 34,
+        "benchmark": "S&P 500",
+        "risk_budget_remaining_pct": 1.8
+      }
+    },
+    {
+      "step": 2,
+      "tool": "market_data_fetcher",
+      "status": "success",
+      "input": {"tickers": ["AAPL", "MSFT", "NVDA", "JPM", "GS"]},
+      "output": {"quotes_retrieved": 5, "data_lag_ms": 42}
+    },
+    {
+      "step": 3,
+      "tool": "risk_model_engine",
+      "status": "success",
+      "input": {"model": "var_95", "horizon_days": 1},
+      "output": {"var_95": 187500, "cvar_95": 210000, "confidence": 0.91}
+    },
+    {
+      "step": 4,
+      "tool": "risk_model_engine",
+      "status": "error",
+      "input": {"model": "monte_carlo", "simulations": 10000},
+      "error": "Timeout: Monte Carlo simulation exceeded 30s limit. Partial result discarded.",
+      "output": null
+    },
+    {
+      "step": 5,
+      "tool": "sec_filing_reader",
+      "status": "error",
+      "input": {"ticker": "NVDA", "form_type": "10-Q"},
+      "error": "SEC EDGAR rate limit exceeded. Retry after 60s.",
+      "output": null
+    },
+    {
+      "step": 6,
+      "tool": "compliance_screener",
+      "status": "success",
+      "input": {"ticker": "JPM"},
+      "output": {"watchlist_status": "clear", "sanctions_status": "clear"}
+    },
+    {
+      "step": 7,
+      "tool": "compliance_screener",
+      "status": "success",
+      "input": {"ticker": "GS"},
+      "output": {"watchlist_status": "clear", "sanctions_status": "clear"}
+    },
+    {
+      "step": 8,
+      "tool": "trade_executor",
+      "status": "error",
+      "input": {"ticker": "NVDA", "order_type": "limit", "quantity": 200, "limit_price": 485.00},
+      "error": "Pre-trade compliance check failed: NVDA flagged for pending SEC inquiry. Order blocked.",
+      "output": null
+    },
+    {
+      "step": 9,
+      "tool": "market_data_fetcher",
+      "status": "success",
+      "input": {"tickers": ["TLT", "IEF"]},
+      "output": {"quotes_retrieved": 2, "data_lag_ms": 38}
+    },
+    {
+      "step": 10,
+      "tool": "risk_model_engine",
+      "status": "success",
+      "input": {"model": "stress_test", "scenario": "2008_financial_crisis"},
+      "output": {"scenario_loss_pct": 14.2, "confidence": 0.72}
+    },
+    {
+      "step": 11,
+      "tool": "trade_executor",
+      "status": "success",
+      "input": {"ticker": "TLT", "order_type": "market", "quantity": 500},
+      "output": {"order_id": "ORD-88821", "fill_price": 95.14, "fill_time": "2024-09-12T13:00:38Z"}
+    },
+    {
+      "step": 12,
+      "tool": "report_writer",
+      "status": "success",
+      "input": {"report_type": "daily_risk_summary", "client_id": "CL-4492"},
+      "output": {"report_id": "RPT-20240912-4492", "format": "pdf", "pages": 8}
+    }
+  ],
+  "summary": {
+    "total_steps": 12,
+    "errors": 3,
+    "low_confidence_steps": 2,
+    "outcome": "partial_success",
+    "blocked_actions": ["NVDA trade order — compliance hold"],
+    "notes": [
+      "Monte Carlo simulation timed out on step 4; VaR estimate used instead.",
+      "SEC EDGAR rate limited on step 5; NVDA 10-Q not retrieved.",
+      "Stress test confidence 0.72 is below the 0.80 threshold — result flagged as indicative only."
+    ]
+  }
+}

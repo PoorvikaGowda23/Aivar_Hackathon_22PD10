@@ -1,0 +1,10 @@
+{
+  "tools": [
+    {
+      "name": "document_reader",
+      "description": "Reads HR policy documents and employee handbooks from SharePoint.",
+      "operations": ["read_document", "list_documents"],
+      "data_accessed": ["HR policy documents", "employee handbook text"]
+    }
+  ]
+}

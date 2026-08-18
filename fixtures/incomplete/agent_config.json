@@ -1,0 +1,25 @@
+{
+  "agent_id": "agent-hr-003",
+  "agent_name": "HR Document Summariser",
+  "llm": {
+    "provider": "Groq",
+    "model_name": "llama-3.3-70b-versatile",
+    "version": "3.3",
+    "hosting": "Groq Cloud API"
+  },
+  "data_sources": [
+    {
+      "name": "SharePoint HR Drive",
+      "data_type": "document store",
+      "sensitivity": "confidential"
+    }
+  ],
+  "decision_authority": "informational",
+  "human_oversight": [],
+  "risk_classification": null,
+  "incident_contact": {
+    "name": "TODO",
+    "email": "placeholder@example.com",
+    "escalation_path": "N/A"
+  }
+}

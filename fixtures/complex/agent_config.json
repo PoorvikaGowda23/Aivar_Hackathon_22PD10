@@ -1,0 +1,62 @@
+{
+  "agent_id": "agent-fin-007",
+  "agent_name": "Autonomous Portfolio Risk Analyser",
+  "llm": {
+    "provider": "Groq",
+    "model_name": "llama-3.3-70b-versatile",
+    "version": "3.3",
+    "hosting": "Groq Cloud API"
+  },
+  "data_sources": [
+    {
+      "name": "Bloomberg Market Data Feed",
+      "data_type": "live API",
+      "sensitivity": "confidential"
+    },
+    {
+      "name": "Client Portfolio DB",
+      "data_type": "structured DB",
+      "sensitivity": "PII"
+    },
+    {
+      "name": "SEC EDGAR Filings",
+      "data_type": "document store",
+      "sensitivity": "public"
+    },
+    {
+      "name": "Internal Risk Models",
+      "data_type": "structured DB",
+      "sensitivity": "confidential"
+    },
+    {
+      "name": "Trade Execution Ledger",
+      "data_type": "structured DB",
+      "sensitivity": "confidential"
+    }
+  ],
+  "decision_authority": "autonomous",
+  "human_oversight": [
+    {
+      "description": "All trade orders above $500,000 require a two-person sign-off from the Risk Desk before execution.",
+      "trigger": "Order value > $500,000"
+    },
+    {
+      "description": "An automated circuit-breaker halts all agent activity if drawdown exceeds 3% of portfolio value in a single session.",
+      "trigger": "Session drawdown > 3%"
+    },
+    {
+      "description": "Daily summary report reviewed by the Chief Risk Officer every morning at 08:00 EST.",
+      "trigger": "Daily scheduled review"
+    },
+    {
+      "description": "Any trade in a security flagged for regulatory review is blocked and escalated to Compliance.",
+      "trigger": "Security appears on regulatory watchlist"
+    }
+  ],
+  "risk_classification": "high",
+  "incident_contact": {
+    "name": "Quantitative Risk Team",
+    "email": "quant-risk@example-bank.com",
+    "escalation_path": "PagerDuty 'fintech-ai-critical', then on-call Risk Officer, then CTO"
+  }
+}

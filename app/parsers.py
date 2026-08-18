@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from schema import (
     DataSource,
@@ -67,22 +67,22 @@ def build_human_oversight(raw_config: Dict[str, Any]) -> list[HumanOversightMech
     return [HumanOversightMechanism(**m) for m in mechanisms]
 
 
-def build_incident_contact(raw_config: Dict[str, Any]) -> IncidentContact:
+def build_incident_contact(raw_config: Dict[str, Any]) -> Optional[IncidentContact]:
     contact = raw_config.get("incident_contact")
     if not contact:
-        raise ValueError("agent_config is missing the required 'incident_contact' section")
+        return None
     return IncidentContact(**contact)
 
 
-def parse_decision_authority(raw_config: Dict[str, Any]) -> DecisionAuthority:
+def parse_decision_authority(raw_config: Dict[str, Any]) -> Optional[DecisionAuthority]:
     value = raw_config.get("decision_authority")
     if not value:
-        raise ValueError("agent_config is missing 'decision_authority'")
+        return None
     return DecisionAuthority(value)
 
 
-def parse_risk_classification(raw_config: Dict[str, Any]) -> RiskClassification:
+def parse_risk_classification(raw_config: Dict[str, Any]) -> Optional[RiskClassification]:
     value = raw_config.get("risk_classification")
     if not value:
-        raise ValueError("agent_config is missing 'risk_classification'")
+        return None
     return RiskClassification(value)

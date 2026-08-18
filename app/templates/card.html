@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Compliance Card — {{ card.agent_name }}</title>
+  <meta name="description" content="AI Agent Compliance Card for {{ card.agent_name }}. Risk level: {{ card.risk_classification or 'unset' }}. Generated {{ card.generated_at[:10] }}.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+
+  <style>
+    /* ── Design tokens ─────────────────────────────────────────────── */
+    :root {
+      --primary:    #0f2d52;
+      --primary-lt: #1a4278;
+      --accent:     #2563eb;
+      --surface:    #ffffff;
+      --surface-alt:#f8fafc;
+      --border:     #e2e8f0;
+      --border-strong:#cbd5e1;
+      --text:       #0f172a;
+      --text-muted: #64748b;
+      --text-light: #94a3b8;
+
+      --risk-minimal:      #166534;
+      --risk-minimal-bg:   #dcfce7;
+      --risk-limited:      #92400e;
+      --risk-limited-bg:   #fef3c7;
+      --risk-high:         #991b1b;
+      --risk-high-bg:      #fee2e2;
+      --risk-unacceptable: #4c1d95;
+      --risk-unacceptable-bg:#ede9fe;
+
+      --auth-informational:#0369a1;
+      --auth-informational-bg:#e0f2fe;
+      --auth-advisory:     #92400e;
+      --auth-advisory-bg:  #fef3c7;
+      --auth-autonomous:   #991b1b;
+      --auth-autonomous-bg:#fee2e2;
+
+      --warn-bg:    #fffbeb;
+      --warn-border:#f59e0b;
+      --warn-text:  #78350f;
+
+      --radius-sm: 6px;
+      --radius:    10px;
+      --radius-lg: 14px;
+
+      --shadow-sm: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.06);
+      --shadow:    0 4px 6px -1px rgba(0,0,0,.1), 0 2px 4px -2px rgba(0,0,0,.06);
+    }
+
+    /* ── Reset ─────────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ── Base ──────────────────────────────────────────────────────── */
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: #f1f5f9;
+      color: var(--text);
+      line-height: 1.65;
+      font-size: 14px;
+    }
+
+    a { color: var(--accent); }
+
+    /* ── Print bar (no-print) ───────────────────────────────────────── */
+    .print-bar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--primary);
+      padding: .6rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .print-bar-label {
+      color: rgba(255,255,255,.7);
+      font-size: 12px;
+      letter-spacing: .04em;
+      font-weight: 500;
+    }
+    .print-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: .45rem 1.1rem;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      letter-spacing: .02em;
+      transition: background .15s;
+    }
+    .print-btn:hover { background: #1d4ed8; }
+    .print-btn::before { content: "\1F5A8"; font-size: 15px; }
+
+    /* ── Container ─────────────────────────────────────────────────── */
+    .container {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    /* ── Header ────────────────────────────────────────────────────── */
+    .header-bar {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-lt) 100%);
+      color: #fff;
+      padding: 2rem 0 2.2rem;
+      margin-bottom: 2rem;
+    }
+    .header-eyebrow {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.6);
+      margin-bottom: .6rem;
+    }
+    h1.agent-name {
+      font-size: 1.9rem;
+      font-weight: 700;
+      letter-spacing: -.02em;
+      margin-bottom: 1rem;
+      line-height: 1.2;
+    }
+    .header-meta {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: .6rem;
+    }
+    .meta-item {
+      color: rgba(255,255,255,.75);
+      font-size: 13px;
+    }
+    .meta-sep { color: rgba(255,255,255,.3); }
+
+    /* ── Badges ────────────────────────────────────────────────────── */
+    .badge {
+      display: inline-block;
+      padding: .25em .75em;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: .04em;
+      white-space: nowrap;
+    }
+    /* Risk badges */
+    .risk-minimal      { background: var(--risk-minimal-bg);      color: var(--risk-minimal); }
+    .risk-limited      { background: var(--risk-limited-bg);      color: var(--risk-limited); }
+    .risk-high         { background: var(--risk-high-bg);          color: var(--risk-high); }
+    .risk-unacceptable { background: var(--risk-unacceptable-bg); color: var(--risk-unacceptable); }
+    .risk-unknown      { background: #f1f5f9; color: var(--text-muted); }
+    /* Authority badges */
+    .auth-informational { background: var(--auth-informational-bg); color: var(--auth-informational); }
+    .auth-advisory      { background: var(--auth-advisory-bg);      color: var(--auth-advisory); }
+    .auth-autonomous    { background: var(--auth-autonomous-bg);     color: var(--auth-autonomous); }
+
+    /* ── Completeness warning ───────────────────────────────────────── */
+    .warning-banner {
+      background: var(--warn-bg);
+      border: 1.5px solid var(--warn-border);
+      border-radius: var(--radius);
+      padding: 1.2rem 1.5rem;
+      margin-bottom: 1.75rem;
+    }
+    .warning-banner-title {
+      font-weight: 700;
+      color: var(--warn-text);
+      margin-bottom: .6rem;
+      font-size: 14px;
+    }
+    .warning-banner ul {
+      list-style: none;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: .35rem;
+    }
+    .warning-banner li {
+      font-size: 13px;
+      color: var(--warn-text);
+    }
+    .warning-banner code {
+      background: rgba(245,158,11,.15);
+      padding: .1em .35em;
+      border-radius: 3px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+    }
+
+    /* ── Section rows (two-column: content + citations) ─────────────── */
+    .section-row {
+      display: grid;
+      grid-template-columns: 1fr 290px;
+      gap: 1.25rem;
+      margin-bottom: 1.5rem;
+      align-items: start;
+    }
+    .section-row.full-width {
+      grid-template-columns: 1fr;
+    }
+
+    /* ── Card ──────────────────────────────────────────────────────── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      box-shadow: var(--shadow-sm);
+    }
+    .card.full-width-card {
+      margin-bottom: 0;
+    }
+
+    /* Section heading inside card */
+    h2.section-title {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+      padding-bottom: .5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* Body text in sections */
+    .section-body {
+      color: var(--text);
+      font-size: 14.5px;
+      line-height: 1.7;
+    }
+
+    /* ── KV table (LLM info, incident contact) ──────────────────────── */
+    .kv-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .kv-table th {
+      text-align: left;
+      width: 120px;
+      font-weight: 500;
+      color: var(--text-muted);
+      font-size: 13px;
+      padding: .35rem 0;
+      vertical-align: top;
+      white-space: nowrap;
+      padding-right: 1rem;
+    }
+    .kv-table td {
+      font-size: 14px;
+      color: var(--text);
+      padding: .35rem 0;
+      vertical-align: top;
+    }
+
+    /* ── Tool / data-source tables ──────────────────────────────────── */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: .75rem;
+      font-size: 13px;
+    }
+    .data-table thead th {
+      background: var(--surface-alt);
+      text-align: left;
+      font-weight: 600;
+      font-size: 12px;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      padding: .6rem .9rem;
+      border: 1px solid var(--border);
+    }
+    .data-table tbody td {
+      padding: .7rem .9rem;
+      border: 1px solid var(--border);
+      vertical-align: top;
+      color: var(--text);
+      line-height: 1.5;
+    }
+    .data-table tbody tr:nth-child(even) td {
+      background: var(--surface-alt);
+    }
+    .data-table tbody tr:hover td {
+      background: #eff6ff;
+    }
+
+    /* Tags (operations, data_accessed) */
+    .tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .3rem;
+    }
+    .tag {
+      background: #f1f5f9;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      border-radius: 4px;
+      padding: .1em .5em;
+      font-size: 11.5px;
+      font-family: 'Courier New', monospace;
+      white-space: nowrap;
+    }
+    .tag.sensitive { background: #fef2f2; border-color: #fecaca; color: #991b1b; }
+    .tag.pii       { background: #fdf4ff; border-color: #e9d5ff; color: #6b21a8; }
+
+    /* Sensitivity badge */
+    .sensitivity {
+      display: inline-block;
+      padding: .15em .6em;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+    .s-public       { background: #dcfce7; color: #166534; }
+    .s-internal     { background: #dbeafe; color: #1e40af; }
+    .s-confidential { background: #fef3c7; color: #92400e; }
+    .s-pii          { background: #fdf4ff; color: #6b21a8; }
+
+    /* ── Oversight / limitation list ────────────────────────────────── */
+    .oversight-list, .limitation-list {
+      list-style: none;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: .85rem;
+    }
+    .oversight-item {
+      background: var(--surface-alt);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      padding: .7rem 1rem;
+    }
+    .oversight-item .trigger {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: .25rem;
+      font-style: italic;
+    }
+    .limitation-item {
+      display: flex;
+      gap: .75rem;
+      align-items: flex-start;
+    }
+    .limitation-bullet {
+      flex-shrink: 0;
+      width: 20px;
+      height: 20px;
+      background: var(--risk-limited-bg);
+      color: var(--risk-limited);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      margin-top: 2px;
+    }
+
+    /* ── Citations panel ────────────────────────────────────────────── */
+    .citations-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      box-shadow: var(--shadow-sm);
+    }
+    h3.citations-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--text-light);
+      margin-bottom: .85rem;
+      padding-bottom: .5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .citation {
+      font-size: 12px;
+      color: var(--text-muted);
+      padding: .45rem 0;
+      border-bottom: 1px solid var(--border);
+      line-height: 1.5;
+    }
+    .citation:last-child { border-bottom: none; }
+    .citation strong {
+      display: block;
+      color: var(--text);
+      font-weight: 600;
+      margin-bottom: .1rem;
+    }
+
+    /* Inline citations row (for full-width sections) */
+    .citations-inline {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .4rem;
+      margin-bottom: 1rem;
+    }
+    .citation-pill {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #1d4ed8;
+      border-radius: 4px;
+      padding: .2em .6em;
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    /* ── Full-width citations row for tables ────────────────────────── */
+    .table-citations {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: .75rem 1rem;
+      margin-bottom: 1rem;
+    }
+    .table-citations-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      color: var(--text-light);
+      margin-bottom: .4rem;
+    }
+
+    /* ── Metadata footer ────────────────────────────────────────────── */
+    .metadata-footer {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
+      margin-top: 2rem;
+      margin-bottom: 2rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+    }
+    .meta-entry label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      color: var(--text-light);
+      margin-bottom: .25rem;
+    }
+    .meta-entry span {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* ── Accessibility: focus visible ────────────────────────────────── */
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+    /* ── None/missing value placeholder ────────────────────────────── */
+    .not-set {
+      color: var(--text-light);
+      font-style: italic;
+      font-size: 13px;
+    }
+
+    /* ================================================================
+       PRINT STYLES
+       ================================================================ */
+    @media print {
+      /* Hide all browser chrome and interactive elements */
+      .no-print { display: none !important; }
+
+      /* White background, no gradients in body */
+      body { background: #fff; font-size: 12px; }
+
+      /* Remove shadows, keep borders for readability */
+      .card, .citations-panel, .table-citations, .metadata-footer {
+        box-shadow: none !important;
+        border: 1px solid #ccc !important;
+      }
+
+      /* Force print of background colors (risk badges, authority badges) */
+      .badge, .sensitivity, .tag, .tag.sensitive, .tag.pii,
+      .header-bar, .oversight-item, .citation-pill {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      /* Header: keep dark background on print */
+      .header-bar {
+        background: var(--primary) !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        color: #fff !important;
+      }
+
+      /* Container: use full page width */
+      .container { max-width: 100%; padding: 0 .5rem; }
+
+      /* Section rows: stack to single column on narrow print */
+      .section-row {
+        display: block !important;
+        page-break-inside: avoid;
+      }
+      .citations-panel {
+        margin-top: .75rem;
+        border-top: 1px solid #ccc;
+      }
+
+      /* Keep table rows together; repeat headers on each page */
+      table { page-break-inside: auto; }
+      tr    { page-break-inside: avoid; page-break-after: auto; }
+      thead { display: table-header-group; }
+      tfoot { display: table-footer-group; }
+
+      /* Avoid orphan headings */
+      h1, h2, h3 { page-break-after: avoid; }
+
+      /* Keep each card together where possible */
+      .card { page-break-inside: avoid; margin-bottom: .75rem; }
+
+      /* Warning banner: keep together */
+      .warning-banner { page-break-inside: avoid; }
+
+      /* Oversight and limitation items */
+      .oversight-item, .limitation-item { page-break-inside: avoid; }
+
+      /* Metadata footer at page end */
+      .metadata-footer { page-break-before: auto; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Print / Save as PDF bar ────────────────────────────────────── -->
+  <div class="print-bar no-print" role="toolbar" aria-label="Document actions">
+    <span class="print-bar-label">AI Agent Compliance Card — Preview Mode</span>
+    <button
+      id="print-btn"
+      class="print-btn"
+      onclick="window.print()"
+      aria-label="Print or save this compliance card as PDF"
+    >
+      Print / Save as PDF
+    </button>
+  </div>
+
+  <!-- ── Page header ─────────────────────────────────────────────────── -->
+  <header class="header-bar">
+    <div class="container">
+      <p class="header-eyebrow">AI Agent Compliance Card</p>
+      <h1 class="agent-name">{{ card.agent_name }}</h1>
+      <div class="header-meta">
+        <span class="meta-item">ID: {{ card.agent_id }}</span>
+        <span class="meta-sep" aria-hidden="true">|</span>
+        <span class="meta-item">Version {{ card.version }}</span>
+        <span class="meta-sep" aria-hidden="true">|</span>
+        <span class="meta-item">{{ card.generated_at[:10] }}</span>
+        <span class="meta-sep" aria-hidden="true">|</span>
+
+        {% if card.decision_authority %}
+          <span class="badge auth-{{ card.decision_authority }}">
+            {{ card.decision_authority | title }} Authority
+          </span>
+        {% else %}
+          <span class="badge risk-unknown">Authority unset</span>
+        {% endif %}
+
+        {% if card.risk_classification %}
+          <span class="badge risk-{{ card.risk_classification }}">
+            {{ card.risk_classification | upper }} RISK
+          </span>
+        {% else %}
+          <span class="badge risk-unknown">Risk unclassified</span>
+        {% endif %}
+      </div>
+    </div>
+  </header>
+
+  <main class="container" id="main-content">
+
+    <!-- ── Completeness warning (shown only when issues exist) ──────── -->
+    {% if report and not report.is_complete %}
+    <div class="warning-banner" role="alert" aria-live="polite">
+      <div class="warning-banner-title">
+        Completeness Issues — {{ report.issues | length }} field(s) require attention before regulatory submission
+      </div>
+      <ul>
+        {% for issue in report.issues %}
+        <li>
+          <strong>[{{ issue.issue_type | upper }}]</strong>
+          <code>{{ issue.field }}</code> — {{ issue.message }}
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+
+    <!-- ════════════════════════════════════════════════════════════════
+         SECTION 1 — Purpose & Scope
+         ════════════════════════════════════════════════════════════════ -->
+    <div class="section-row" id="purpose-and-scope">
+      <div class="card">
+        <h2 class="section-title">Purpose &amp; Scope</h2>
+        {% if card.purpose_and_scope %}
+          <p class="section-body">{{ card.purpose_and_scope }}</p>
+        {% else %}
+          <p class="not-set">Not specified.</p>
+        {% endif %}
+      </div>
+      <aside class="citations-panel" aria-label="Regulatory basis for Purpose and Scope">
+        <h3 class="citations-title">Regulatory Basis</h3>
+        {% for cite in annotated.purpose_and_scope.citations %}
+          <div class="citation">{{ cite }}</div>
+        {% else %}
+          <div class="citation not-set">No citations mapped.</div>
+        {% endfor %}
+      </aside>
+    </div>
+
+
+    <!-- ════════════════════════════════════════════════════════════════
+         SECTION 2 — LLM Information
+         ════════════════════════════════════════════════════════════════ -->
+    <div class="section-row" id="llm-information">
+      <div class="card">
+        <h2 class="section-title">LLM Information</h2>
+        <table class="kv-table" aria-label="LLM details">
+          <tbody>
+            <tr><th scope="row">Provider</th><td>{{ card.llm.provider }}</td></tr>
+            <tr><th scope="row">Model</th><td>{{ card.llm.model_name }}</td></tr>
+            <tr><th scope="row">Version</th><td>{{ card.llm.version }}</td></tr>
+            {% if card.llm.hosting %}
+            <tr><th scope="row">Hosting</th><td>{{ card.llm.hosting }}</td></tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+      <aside class="citations-panel" aria-label="Regulatory basis for LLM information">
+        <h3 class="citations-title">Regulatory Basis</h3>
+        {% for cite in annotated.llm.citations %}
+          <div class="citation">{{ cite }}</div>
+        {% endfor %}
+      </aside>
+    </div>
+
+
+    <!-- ════════════════════════════════════════════════════════════════
+         SECTION 3 — Tool Inventory
+         ════════════════════════════════════════════════════════════════ -->
+    <div class="section-row full-width" id="tool-inventory">
+      <div class="card full-width-card">
+        <h2 class="section-title">Tool Inventory</h2>
+
+        <div class="table-citations">
+          <div class="table-citations-label">Regulatory Basis</div>
+          <div class="citations-inline">
+            {% for cite in annotated.tool_inventory.citations %}
+              <span class="citation-pill">{{ cite.split(' — ')[0] }}</span>
+            {% endfor %}
+          </div>
+        </div>
+
+        {% if card.tool_inventory %}
+        <table class="data-table" aria-label="Tool inventory">
+          <thead>
+            <tr>
+              <th style="width:160px">Tool Name</th>
+              <th>Description</th>
+              <th style="width:220px">Operations</th>
+              <th style="width:240px">Data Accessed</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for tool in card.tool_inventory %}
+            <tr>
+              <td><strong>{{ tool.name }}</strong></td>
+              <td>{{ tool.description }}</td>
+              <td>
+                <div class="tag-list">
+                  {% for op in tool.operations %}
+                    <span class="tag">{{ op }}</span>
+                  {% endfor %}
+                </div>
+              </td>
+              <td>
+                <div class="tag-list">
+                  {% for da in tool.data_accessed %}
+                    {% if 'pii' in da | lower or 'personal' in da | lower %}
+                      <span class="tag pii">{{ da }}</span>
+                    {% elif 'sensitive' in da | lower or 'confidential' in da | lower %}
+                      <span class="tag sensitive">{{ da }}</span>
+                    {% else %}
+                      <span class="tag">{{ da }}</span>
+                    {% endif %}
+                  {% endfor %}
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+          <p class="not-set">No tools registered.</p>
+        {% endif %}
+      </div>
+    </div>
+
+
+    <!-- ════════════════════════════════════════════════════════════════
+         SECTION 4 — Data Sources
+         ════════════════════════════════════════════════════════════════ -->
+    <div class="section-row full-width" id="data-sources">
+      <div class="card full-width-card">
+        <h2 class="section-title">Data Sources</h2>
+
+        <div class="table-citations">
+          <div class="table-citations-label">Regulatory Basis</div>
+          <div class="citations-inline">
+            {% for cite in annotated.data_sources.citations %}
+              <span class="citation-pill">{{ cite.split(' — ')[0] }}</span>
+            {% endfor %}
+          </div>
+        </div>
+
+        {% if card.data_sources %}
+        <table class="data-table" aria-label="Data sources">
+          <thead>
+            <tr>
+              <th style="width:200px">Source Name</th>
+              <th style="width:200px">Data Type</th>
+              <th>Sensitivity</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for ds in card.data_sources %}
+            <tr>
+              <td><strong>{{ ds.name }}</strong></td>
+              <td>{{ ds.data_type }}</td>
+              <td>
+                <span class="sensitivity s-{{ ds.sensitivity | lower | replace(' ', '-') }}">
+                  {{ ds.sensitivity | upper }}
+                </span>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+          <p class="not-set">No data sources registered.</p>
+        {% endif %}
+      </div>
+    </div>
+
+
+    <!-- ════════════════════════════════════════════════════════════════
+         SECTION 5 — Decision Authority
+         ════════════════════════════════════════════════════════════════ -->
+    <div class="section-row" id="decision-authority">
+      <div class="card">
+        <h2 class="section-title">Decision Authority</h2>
+        {% if card.decision_authority %}
+          <p style="margin-bottom:.75rem">
+            <span class="badge auth-{{ card.decision_authority }}" style="font-size:14px;padding:.3em 1em">
+              {{ card.decision_authority | title }}
+            </span>
+          </p>
+          {% if card.decision_authority == 'informational' %}
+            <p class="section-body">The agent surfaces information only. No recommendations or actions are taken autonomously.</p>
+          {% elif card.decision_authority == 'advisory' %}
+            <p class="section-body">The agent provides recommendations but a human decision-maker must approve every action.</p>
+          {% elif card.decision_authority == 'autonomous' %}
+            <p class="section-body" style="color:var(--risk-high)"><strong>The agent acts autonomously without human sign-off.</strong> Stronger oversight controls are required.</p>
+          {% endif %}
+        {% else %}
+          <p class="not-set">Decision authority not specified.</p>
+        {% endif %}
+      </div>
+      <aside class="citations-panel" aria-label="Regulatory basis for Decision Authority">
+        <h3 class="citations-title">Regulatory Basis</h3>
+        {% for cite in annotated.decision_authority.citations %}
+          <div class="citation">{{ cite }}</div>
+        {% endfor %}
+      </aside>
+    </div>
+
+
+    <!-- ════════════════════════════════════════════════════════════════
+         SECTION 6 — Human Oversight
+         ════════════════════════════════════════════════════════════════ -->
+    <div class="section-row" id="human-oversight">
+      <div class="card">
+        <h2 class="section-title">Human Oversight Mechanisms</h2>
+        {% if card.human_oversight %}
+          <ul class="oversight-list" aria-label="Human oversight mechanisms">
+            {% for mech in card.human_oversight %}
+            <li class="oversight-item">
+              <div>{{ mech.description }}</div>
+              {% if mech.trigger %}
+                <div class="trigger">Trigger: {{ mech.trigger }}</div>
+              {% endif %}
+            </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="not-set">No oversight mechanisms defined.</p>
+        {% endif %}
+      </div>
+      <aside class="citations-panel" aria-label="Regulatory basis for Human Oversight">
+        <h3 class="citations-title">Regulatory Basis</h3>
+        {% for cite in annotated.human_oversight.citations %}
+          <div class="citation">{{ cite }}</div>
+        {% endfor %}
+      </aside>
+    </div>
+
+
+    <!-- ════════════════════════════════════════════════════════════════
+         SECTION 7 — Risk Classification
+         ════════════════════════════════════════════════════════════════ -->
+    <div class="section-row" id="risk-classification">
+      <div class="card">
+        <h2 class="section-title">Risk Classification</h2>
+        {% if card.risk_classification %}
+          <p style="margin-bottom:.75rem">
+            <span class="badge risk-{{ card.risk_classification }}" style="font-size:14px;padding:.3em 1em">
+              {{ card.risk_classification | upper }}
+            </span>
+          </p>
+          {% if card.risk_classification == 'minimal' %}
+            <p class="section-body">Minimal risk — limited regulatory oversight obligations apply.</p>
+          {% elif card.risk_classification == 'limited' %}
+            <p class="section-body">Limited risk — transparency obligations apply (EU AI Act Art. 13). Deployers must be informed.</p>
+          {% elif card.risk_classification == 'high' %}
+            <p class="section-body"><strong>High risk</strong> — full EU AI Act obligations apply including conformity assessment, human oversight, and incident reporting.</p>
+          {% elif card.risk_classification == 'unacceptable' %}
+            <p class="section-body" style="color:var(--risk-unacceptable)"><strong>Unacceptable risk — prohibited under EU AI Act Art. 5.</strong> Deployment must not proceed.</p>
+          {% endif %}
+        {% else %}
+          <p class="not-set">Risk classification not specified — this field must be completed before regulatory submission.</p>
+        {% endif %}
+      </div>
+      <aside class="citations-panel" aria-label="Regulatory basis for Risk Classification">
+        <h3 class="citations-title">Regulatory Basis</h3>
+        {% for cite in annotated.risk_classification.citations %}
+          <div class="citation">{{ cite }}</div>
+        {% endfor %}
+      </aside>
+    </div>
+
+
+    <!-- ════════════════════════════════════════════════════════════════
+         SECTION 8 — Known Limitations
+         ════════════════════════════════════════════════════════════════ -->
+    <div class="section-row" id="known-limitations">
+      <div class="card">
+        <h2 class="section-title">Known Limitations</h2>
+        {% if card.known_limitations %}
+          <ul class="limitation-list" aria-label="Known limitations">
+            {% for lim in card.known_limitations %}
+            <li class="limitation-item">
+              <span class="limitation-bullet" aria-hidden="true">{{ loop.index }}</span>
+              <span>{{ lim }}</span>
+            </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="not-set">No limitations recorded. Consider whether this accurately reflects the agent's behaviour.</p>
+        {% endif %}
+      </div>
+      <aside class="citations-panel" aria-label="Regulatory basis for Known Limitations">
+        <h3 class="citations-title">Regulatory Basis</h3>
+        {% for cite in annotated.known_limitations.citations %}
+          <div class="citation">{{ cite }}</div>
+        {% endfor %}
+      </aside>
+    </div>
+
+
+    <!-- ════════════════════════════════════════════════════════════════
+         SECTION 9 — Incident Contact
+         ════════════════════════════════════════════════════════════════ -->
+    <div class="section-row" id="incident-contact">
+      <div class="card">
+        <h2 class="section-title">Incident Contact</h2>
+        {% if card.incident_contact %}
+          <table class="kv-table" aria-label="Incident contact details">
+            <tbody>
+              <tr><th scope="row">Name</th><td>{{ card.incident_contact.name }}</td></tr>
+              <tr><th scope="row">Email</th>
+                <td><a href="mailto:{{ card.incident_contact.email }}">{{ card.incident_contact.email }}</a></td>
+              </tr>
+              {% if card.incident_contact.escalation_path %}
+              <tr><th scope="row">Escalation</th><td>{{ card.incident_contact.escalation_path }}</td></tr>
+              {% endif %}
+            </tbody>
+          </table>
+        {% else %}
+          <p class="not-set">No incident contact specified.</p>
+        {% endif %}
+      </div>
+      <aside class="citations-panel" aria-label="Regulatory basis for Incident Contact">
+        <h3 class="citations-title">Regulatory Basis</h3>
+        {% for cite in annotated.incident_contact.citations %}
+          <div class="citation">{{ cite }}</div>
+        {% endfor %}
+      </aside>
+    </div>
+
+
+    <!-- ════════════════════════════════════════════════════════════════
+         DOCUMENT METADATA FOOTER
+         ════════════════════════════════════════════════════════════════ -->
+    <footer class="metadata-footer" aria-label="Document metadata">
+      <div class="meta-entry">
+        <label>Agent ID</label>
+        <span>{{ card.agent_id }}</span>
+      </div>
+      <div class="meta-entry">
+        <label>Card Version</label>
+        <span>{{ card.version }}</span>
+      </div>
+      <div class="meta-entry">
+        <label>Generated At</label>
+        <span>{{ card.generated_at }}</span>
+      </div>
+      <div class="meta-entry">
+        <label>Generated By</label>
+        <span>{{ generated_by }}</span>
+      </div>
+      <div class="meta-entry">
+        <label>Completeness</label>
+        <span>
+          {% if report %}
+            {% if report.is_complete %}Complete{% else %}{{ report.issues | length }} issue(s) flagged{% endif %}
+          {% else %}Not checked{% endif %}
+        </span>
+      </div>
+    </footer>
+
+  </main>
+</body>
+</html>

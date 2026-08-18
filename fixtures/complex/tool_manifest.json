@@ -1,0 +1,46 @@
+{
+  "tools": [
+    {
+      "name": "market_data_fetcher",
+      "description": "Streams real-time and historical price, volume, and volatility data from Bloomberg.",
+      "operations": ["get_realtime_quote", "get_historical_ohlcv", "get_volatility_surface"],
+      "data_accessed": ["equity prices", "bond yields", "derivatives data", "market volume"]
+    },
+    {
+      "name": "portfolio_reader",
+      "description": "Reads current portfolio positions, weights, and client mandate constraints.",
+      "operations": ["get_positions", "get_client_mandate", "get_benchmark_weights"],
+      "data_accessed": ["client PII", "portfolio holdings", "investment mandate", "risk limits"]
+    },
+    {
+      "name": "risk_model_engine",
+      "description": "Computes VaR, CVaR, factor exposures, and stress-test outcomes using internal quant models.",
+      "operations": ["compute_var", "run_stress_test", "compute_factor_exposure", "run_monte_carlo"],
+      "data_accessed": ["portfolio holdings", "internal risk model parameters", "historical scenarios"]
+    },
+    {
+      "name": "sec_filing_reader",
+      "description": "Downloads and parses 10-K, 10-Q, and 8-K filings from SEC EDGAR.",
+      "operations": ["search_filings", "download_filing", "extract_financials"],
+      "data_accessed": ["public SEC EDGAR documents", "financial statements"]
+    },
+    {
+      "name": "trade_executor",
+      "description": "Submits limit and market orders to the brokerage execution layer. Requires compliance pre-check.",
+      "operations": ["submit_order", "cancel_order", "get_order_status"],
+      "data_accessed": ["trade execution ledger", "order book", "client account ID"]
+    },
+    {
+      "name": "compliance_screener",
+      "description": "Cross-checks a security against the regulatory watchlist and AML/sanctions databases.",
+      "operations": ["screen_security", "get_watchlist_status"],
+      "data_accessed": ["internal regulatory watchlist", "OFAC sanctions list"]
+    },
+    {
+      "name": "report_writer",
+      "description": "Generates daily risk summary and trade attribution reports in PDF and JSON.",
+      "operations": ["generate_risk_report", "generate_trade_attribution"],
+      "data_accessed": ["portfolio holdings", "trade history", "risk model outputs"]
+    }
+  ]
+}

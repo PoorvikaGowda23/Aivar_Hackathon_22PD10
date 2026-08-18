@@ -1,0 +1,28 @@
+{
+  "tools": [
+    {
+      "name": "ticket_reader",
+      "description": "Reads support ticket content and metadata from Zendesk.",
+      "operations": ["read_ticket", "list_tickets"],
+      "data_accessed": ["customer name", "email", "ticket body", "ticket history"]
+    },
+    {
+      "name": "urgency_classifier",
+      "description": "Assigns an urgency score (1-10) to a support ticket based on content.",
+      "operations": ["classify_urgency"],
+      "data_accessed": ["ticket body", "customer tier"]
+    },
+    {
+      "name": "draft_writer",
+      "description": "Drafts a reply for a human agent to review and send.",
+      "operations": ["create_draft"],
+      "data_accessed": ["ticket body", "CRM customer profile"]
+    },
+    {
+      "name": "crm_lookup",
+      "description": "Retrieves customer profile and purchase history from the CRM.",
+      "operations": ["get_customer_profile"],
+      "data_accessed": ["customer PII", "order history", "subscription tier"]
+    }
+  ]
+}

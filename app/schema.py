@@ -104,11 +104,11 @@ class AgentCard(BaseModel):
     llm: LLMInfo
     tool_inventory: List[ToolEntry] = Field(default_factory=list)
     data_sources: List[DataSource] = Field(default_factory=list)
-    decision_authority: DecisionAuthority
+    decision_authority: Optional[DecisionAuthority] = None
     human_oversight: List[HumanOversightMechanism] = Field(default_factory=list)
-    risk_classification: RiskClassification
+    risk_classification: Optional[RiskClassification] = None
     known_limitations: List[str] = Field(default_factory=list)
-    incident_contact: IncidentContact
+    incident_contact: Optional[IncidentContact] = None
 
     model_config = ConfigDict(use_enum_values=True)
 
