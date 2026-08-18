@@ -1,0 +1,12 @@
+# Environment variables (never commit these)
+.env
+
+# Virtual environment
+myenv/
+venv/
+.venv/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo

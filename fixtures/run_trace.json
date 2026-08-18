@@ -1,0 +1,57 @@
+{
+  "trace_id": "trace-20240815-0042",
+  "agent_id": "agent-cs-001",
+  "started_at": "2024-08-15T09:12:00Z",
+  "ended_at": "2024-08-15T09:12:08Z",
+  "steps": [
+    {
+      "step": 1,
+      "tool": "ticket_reader",
+      "status": "success",
+      "input": {"ticket_id": "TKT-9821"},
+      "output": {"subject": "Refund not received after 14 days", "urgency_hint": "customer frustrated"}
+    },
+    {
+      "step": 2,
+      "tool": "crm_lookup",
+      "status": "success",
+      "input": {"customer_email": "user@example.com"},
+      "output": {"tier": "gold", "open_orders": 2}
+    },
+    {
+      "step": 3,
+      "tool": "urgency_classifier",
+      "status": "success",
+      "input": {"ticket_id": "TKT-9821"},
+      "output": {"urgency_score": 7, "confidence": 0.81}
+    },
+    {
+      "step": 4,
+      "tool": "draft_writer",
+      "status": "success",
+      "input": {"ticket_id": "TKT-9821", "tone": "empathetic"},
+      "output": {"draft_id": "DRF-4421", "word_count": 87}
+    },
+    {
+      "step": 5,
+      "tool": "ticket_reader",
+      "status": "error",
+      "input": {"ticket_id": "TKT-9822"},
+      "error": "Ticket not found — may have been deleted or merged",
+      "output": null
+    },
+    {
+      "step": 6,
+      "tool": "urgency_classifier",
+      "status": "success",
+      "input": {"ticket_id": "TKT-9823"},
+      "output": {"urgency_score": 4, "confidence": 0.63}
+    }
+  ],
+  "summary": {
+    "total_steps": 6,
+    "errors": 1,
+    "low_confidence_steps": 1,
+    "outcome": "partial_success"
+  }
+}

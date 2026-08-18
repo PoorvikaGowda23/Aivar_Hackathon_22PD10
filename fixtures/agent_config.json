@@ -1,0 +1,39 @@
+{
+  "agent_id": "agent-cs-001",
+  "agent_name": "Customer Support Triage Agent",
+  "llm": {
+    "provider": "Groq",
+    "model_name": "llama-3.3-70b-versatile",
+    "version": "3.3",
+    "hosting": "Groq Cloud API"
+  },
+  "data_sources": [
+    {
+      "name": "Zendesk",
+      "data_type": "live API",
+      "sensitivity": "confidential"
+    },
+    {
+      "name": "Customer CRM",
+      "data_type": "structured DB",
+      "sensitivity": "PII"
+    }
+  ],
+  "decision_authority": "advisory",
+  "human_oversight": [
+    {
+      "description": "A human support agent must review and approve every draft reply before it is sent to the customer.",
+      "trigger": "Every ticket response"
+    },
+    {
+      "description": "Escalations flagged as high-urgency are routed to a senior agent within 15 minutes.",
+      "trigger": "Urgency score >= 8 or keyword 'legal'"
+    }
+  ],
+  "risk_classification": "limited",
+  "incident_contact": {
+    "name": "AI Platform Team",
+    "email": "ai-incidents@example.com",
+    "escalation_path": "Slack #ai-incidents, then on-call via PagerDuty"
+  }
+}
