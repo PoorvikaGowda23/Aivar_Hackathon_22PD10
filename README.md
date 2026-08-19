@@ -7,7 +7,7 @@
 
 ## 🌐 Live Cloud Deployment
 
-- 🏠 **Single Submission Website Portal**: [https://aivaragentcompliancecardgenerator-22pd10.onrender.com/](https://aivaragentcompliancecardgenerator-22pd10.onrender.com/)
+- 🏠 **Website Portal**: [https://aivaragentcompliancecardgenerator-22pd10.onrender.com/](https://aivaragentcompliancecardgenerator-22pd10.onrender.com/)
 - 📚 **Interactive Swagger API Docs**: [https://aivaragentcompliancecardgenerator-22pd10.onrender.com/docs](https://aivaragentcompliancecardgenerator-22pd10.onrender.com/docs)
 - 📄 **Live HTML Compliance Card Document**: [https://aivaragentcompliancecardgenerator-22pd10.onrender.com/agents/cards/agent-cs-001/document](https://aivaragentcompliancecardgenerator-22pd10.onrender.com/agents/cards/agent-cs-001/document)
 - 💚 **Cloud Health Check**: [https://aivaragentcompliancecardgenerator-22pd10.onrender.com/health](https://aivaragentcompliancecardgenerator-22pd10.onrender.com/health)
@@ -74,11 +74,11 @@ flowchart TD
 ## 🛠️ Technology Stack
 
 - **Backend Framework**: Python 3.10+, FastAPI, Uvicorn
-- **Data Validation**: Pydantic v2 (with `EmailStr` validation)
+- **Data Validation**: Pydantic v2 
 - **Database Layer**: SQLAlchemy 2.0 (Dual DB support: SQLite for local dev, Neon Serverless PostgreSQL for production)
 - **LLM Engine**: Groq API (LLaMA 3.3 70B Versatile)
 - **Templating**: Jinja2 & Vanilla HTML5/CSS3/JS (Glassmorphism design system)
-- **Testing**: Pytest & HTTPX (`16/16 tests passing`)
+- **Testing**: Pytest & HTTPX 
 - **Cloud Deployment**: Render.com Web Services
 
 ---
@@ -107,7 +107,7 @@ pip install -r requirements.txt
 Create a `.env` file in the root directory:
 ```env
 GROQ_API_KEY=gsk_your_groq_api_key_here
-DATABASE_URL=sqlite:///./compliance_cards.db
+DATABASE_URL=database:///./compliance_cards.db
 ```
 
 ### 4. Run Application Server
