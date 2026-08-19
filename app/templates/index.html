@@ -80,7 +80,7 @@
 
     .nav-links {
       display: flex;
-      gap: 1.5rem;
+      gap: 1rem;
       align-items: center;
     }
 
@@ -88,15 +88,15 @@
       background: none;
       border: none;
       color: var(--text-muted);
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       font-weight: 500;
       cursor: pointer;
-      padding: 0.5rem 1rem;
+      padding: 0.5rem 0.85rem;
       border-radius: 8px;
       transition: all 0.2s ease;
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.4rem;
       text-decoration: none;
     }
 
@@ -428,6 +428,9 @@
       <button class="nav-btn" onclick="switchTab('tab-viewer')">
         <i class="fa-solid fa-file-invoice"></i> Card Viewer
       </button>
+      <button class="nav-btn" onclick="switchTab('tab-diff')">
+        <i class="fa-solid fa-code-compare"></i> Version Diff
+      </button>
       <button class="nav-btn" onclick="switchTab('tab-history')">
         <i class="fa-solid fa-clock-rotate-left"></i> Agent Registry
       </button>
@@ -496,9 +499,6 @@
       <div class="card-panel">
         <div class="panel-header">
           <div class="panel-title"><i class="fa-solid fa-cloud-arrow-up"></i> Upload Agent Artifacts</div>
-          <button class="btn btn-secondary" onclick="loadSampleData()">
-            <i class="fa-solid fa-flask"></i> Load Sample Demo Data
-          </button>
         </div>
 
         <form id="generate-form">
@@ -553,7 +553,55 @@
       </div>
     </div>
 
-    <!-- ── Tab 3: Registry / History ── -->
+    <!-- ── Tab 3: Version Diff Engine ── -->
+    <div id="tab-diff" class="tab-content">
+      <div class="card-panel">
+        <div class="panel-header">
+          <div class="panel-title"><i class="fa-solid fa-code-compare"></i> Card Version Diff Engine</div>
+        </div>
+        <p style="color: var(--text-muted); margin-bottom: 1.25rem; font-size: 0.9rem;">
+          Compare two card versions field-by-field. Changes in tool inventory, data sources, decision authority, or risk classification are automatically flagged as requiring regulatory re-assessment.
+        </p>
+
+        <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; align-items: flex-end; flex-wrap: wrap;">
+          <div>
+            <label style="display:block; font-size:0.85rem; color:var(--text-muted); margin-bottom:0.4rem;">Agent ID</label>
+            <input type="text" id="diff-agent-id" value="agent-cs-001" style="background:var(--bg-dark); border:1px solid var(--border-color); color:white; padding:0.6rem 1rem; border-radius:8px; font-size:0.9rem;">
+          </div>
+          <div>
+            <label style="display:block; font-size:0.85rem; color:var(--text-muted); margin-bottom:0.4rem;">From Version</label>
+            <input type="number" id="diff-from" value="1" min="1" style="background:var(--bg-dark); border:1px solid var(--border-color); color:white; padding:0.6rem 1rem; border-radius:8px; font-size:0.9rem; width:100px;">
+          </div>
+          <div>
+            <label style="display:block; font-size:0.85rem; color:var(--text-muted); margin-bottom:0.4rem;">To Version</label>
+            <input type="number" id="diff-to" value="2" min="1" style="background:var(--bg-dark); border:1px solid var(--border-color); color:white; padding:0.6rem 1rem; border-radius:8px; font-size:0.9rem; width:100px;">
+          </div>
+          <button class="btn btn-primary" onclick="runDiff()">
+            <i class="fa-solid fa-code-compare"></i> Compare Card Versions
+          </button>
+        </div>
+
+        <!-- Results Banner -->
+        <div id="diff-banner" style="display:none; margin-bottom:1.5rem; padding:1rem 1.25rem; border-radius:10px; font-size:0.95rem;"></div>
+
+        <!-- Diff Results Table -->
+        <div id="diff-results" style="display:none;">
+          <table>
+            <thead>
+              <tr>
+                <th>Field Name</th>
+                <th>Previous Value (v<span id="label-from">1</span>)</th>
+                <th>Updated Value (v<span id="label-to">2</span>)</th>
+                <th>Regulatory Impact</th>
+              </tr>
+            </thead>
+            <tbody id="diff-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Tab 4: Registry / History ── -->
     <div id="tab-history" class="tab-content">
       <div class="card-panel">
         <div class="panel-header">
@@ -596,11 +644,11 @@
       document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
       document.getElementById(tabId).classList.add('active');
       
-      // Update active nav button
       const btnMap = {
         'tab-generate': 0,
         'tab-viewer': 1,
-        'tab-history': 2
+        'tab-diff': 2,
+        'tab-history': 3
       };
       if (btnMap[tabId] !== undefined) {
         document.querySelectorAll('.nav-btn')[btnMap[tabId]].classList.add('active');
@@ -625,6 +673,66 @@
     function refreshIframe() {
       if (currentAgentId) {
         document.getElementById('document-iframe').src = `/agents/cards/${currentAgentId}/document?t=` + new Date().getTime();
+      }
+    }
+
+    // Version Diff Engine Runner
+    async function runDiff() {
+      const agentId = document.getElementById('diff-agent-id').value;
+      const vFrom = document.getElementById('diff-from').value;
+      const vTo = document.getElementById('diff-to').value;
+
+      try {
+        const res = await fetch(`/agents/cards/${agentId}/diff?from=${vFrom}&to=${vTo}`);
+        if (!res.ok) {
+          const err = await res.json();
+          alert(err.detail || 'Failed to compare versions');
+          return;
+        }
+        const data = await res.json();
+
+        document.getElementById('label-from').innerText = vFrom;
+        document.getElementById('label-to').innerText = vTo;
+
+        const banner = document.getElementById('diff-banner');
+        banner.style.display = 'block';
+
+        if (data.requires_reassessment) {
+          banner.style.background = 'rgba(244, 63, 94, 0.15)';
+          banner.style.border = '1px solid rgba(244, 63, 94, 0.4)';
+          banner.style.color = '#f43f5e';
+          banner.innerHTML = `<strong>⚠️ REGULATORY RE-ASSESSMENT REQUIRED:</strong> Changes detected in key compliance fields: <code>${data.regulatory_changes.join(', ')}</code>. An updated EU AI Act / NIST risk assessment is mandatory before deployment.`;
+        } else {
+          banner.style.background = 'rgba(16, 185, 129, 0.15)';
+          banner.style.border = '1px solid rgba(16, 185, 129, 0.4)';
+          banner.style.color = '#10b981';
+          banner.innerHTML = `<strong>✅ MINOR UPDATES ONLY:</strong> ${data.total_changes} field(s) changed. No regulatory re-assessment required.`;
+        }
+
+        const tbody = document.getElementById('diff-table-body');
+        tbody.innerHTML = '';
+
+        if (Object.keys(data.changes).length === 0) {
+          tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">No field changes found between these two versions.</td></tr>';
+        } else {
+          for (const [field, change] of Object.entries(data.changes)) {
+            const tr = document.createElement('tr');
+            const regBadge = change.requires_regulatory_reassessment
+              ? '<span class="pill" style="background:rgba(244,63,94,0.2); color:#f43f5e; border:1px solid #f43f5e;">⚠️ Regulatory Impact</span>'
+              : '<span class="pill" style="background:rgba(148,163,184,0.1); color:#94a3b8;">Minor Change</span>';
+
+            tr.innerHTML = `
+              <td><code>${field}</code></td>
+              <td style="color:#f87171;"><pre style="white-space:pre-wrap; font-size:0.8rem;">${JSON.stringify(change.from, null, 2)}</pre></td>
+              <td style="color:#4ade80;"><pre style="white-space:pre-wrap; font-size:0.8rem;">${JSON.stringify(change.to, null, 2)}</pre></td>
+              <td>${regBadge}</td>
+            `;
+            tbody.appendChild(tr);
+          }
+        }
+        document.getElementById('diff-results').style.display = 'block';
+      } catch (e) {
+        alert('Error running version diff: ' + e.message);
       }
     }
 
@@ -674,23 +782,6 @@
       switchTab('tab-viewer');
     }
 
-    // Load Sample Fixture Data for 1-click Demo
-    async function loadSampleData() {
-      try {
-        const [configRes, manifestRes, traceRes] = await Promise.all([
-          fetch('/fixtures/simple/agent_config.json'),
-          fetch('/fixtures/simple/tool_manifest.json'),
-          fetch('/fixtures/simple/run_trace.json')
-        ]);
-        
-        // Create DataTransfer objects to simulate user upload
-        alert('Sample demo data loaded! Click "Generate & Persist Card" to process.');
-      } catch (e) {
-        // Fallback demo trigger
-        alert('Ready! Click "Generate & Persist Card" to trigger generation.');
-      }
-    }
-
     // Form Submit Handler
     document.getElementById('generate-form').addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -700,7 +791,7 @@
       const traceInput = document.getElementById('trace-file');
 
       if (!configInput.files[0] || !manifestInput.files[0] || !traceInput.files[0]) {
-        alert('Please select all 3 JSON files first (or use the sample button).');
+        alert('Please select all 3 JSON files first.');
         return;
       }
 
