@@ -559,10 +559,9 @@ def diff_versions(
 # GET /
 # ══════════════════════════════════════════════════════════════════════════════
 
+from portal import PORTAL_HTML
+
 @app.get("/", response_class=HTMLResponse, tags=["Operations"], summary="Agent Compliance Portal Dashboard")
 def root():
     """Serves the interactive Agent Compliance Portal website."""
-    template_path = _APP_DIR / "templates" / "index.html"
-    if template_path.exists():
-        return HTMLResponse(content=template_path.read_text(encoding="utf-8"))
-    return HTMLResponse(content="<h1>Agent Compliance Card Generator</h1><p>API is active. Visit <a href='/docs'>/docs</a>.</p>")
+    return HTMLResponse(content=PORTAL_HTML)
