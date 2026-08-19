@@ -265,15 +265,27 @@ def _check_groq() -> dict:
 # ══════════════════════════════════════════════════════════════════════════════
 
 @app.get("/health", tags=["Operations"], summary="Liveness and dependency check")
-def health(request: Request, db: Session = Depends(get_db)):
+def health(
+    request: Request,
+    full: bool = Query(False, description="Run deep DB and Groq connectivity checks"),
+    db: Session = Depends(get_db),
+):
     """
-    Returns 200 (healthy) or 503 (degraded).
-
-    Checks performed:
-      database — executes SELECT 1 against Neon Postgres and measures latency
-      llm      — calls GET /openai/v1/models on Groq to confirm key is valid
+    Fast liveness check by default (<1ms).
+    Pass ?full=true to run full database ping and Groq API validation.
     """
     request_id = getattr(request.state, "request_id", "unknown")
+
+    if not full:
+        return JSONResponse(
+            status_code=200,
+            content={
+                "status": "healthy",
+                "request_id": request_id,
+                "time": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            },
+        )
+
     db_check   = _check_database(db)
     groq_check = _check_groq()
 

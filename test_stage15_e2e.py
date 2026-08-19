@@ -28,16 +28,16 @@ try:
 except Exception as e:
     check("GET /", False, str(e))
 
-# 2. GET /health
+# 2. GET /health?full=true
 try:
-    with urllib.request.urlopen(LIVE_URL + "/health", timeout=30) as r:
+    with urllib.request.urlopen(LIVE_URL + "/health?full=true", timeout=30) as r:
         s = r.status
         b = json.loads(r.read())
-    check("GET /health  (Liveness & Dependency check)", s == 200 and b.get("status") == "healthy", f"Status: {b.get('status')}")
+    check("GET /health?full=true  (Liveness & Dependency check)", s == 200 and b.get("status") == "healthy", f"Status: {b.get('status')}")
     check("  ↳ Neon Postgres Cloud DB", b.get("checks", {}).get("database", {}).get("status") == "ok", str(b.get("checks",{}).get("database")))
     check("  ↳ Groq LLaMA 3.3 70B API", b.get("checks", {}).get("llm", {}).get("status") == "ok", str(b.get("checks",{}).get("llm")))
 except Exception as e:
-    check("GET /health", False, str(e))
+    check("GET /health?full=true", False, str(e))
 
 # 3. GET /docs (Swagger UI)
 try:
