@@ -539,27 +539,35 @@
     <div id="tab-generate" class="tab-content active">
       <div class="card-panel">
         
-        <!-- 🎮 Judge Evaluation Simulator Bar -->
+        <!-- 🎮 Judge Evaluation Simulator Engine Box -->
         <div style="background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 12px; padding: 1.25rem; margin-bottom: 1.5rem;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 0.75rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 0.85rem;">
             <h4 style="font-family:'Outfit', sans-serif; font-size:1.05rem; color:#818cf8; display:flex; align-items:center; gap:0.5rem;">
-              <i class="fa-solid fa-gamepad"></i> 1-Click Judge Evaluation Simulator:
+              <i class="fa-solid fa-microchip"></i> app/simulator.py Synthetic Artifact Engine:
             </h4>
-            <span style="font-size:0.75rem; color:var(--text-muted);">Select a preset agent profile to auto-fill JSON inputs</span>
+            <span style="font-size:0.75rem; color:var(--text-muted);">Generate synthetic JSON triples across 4 domains & 3 complexity levels</span>
           </div>
           
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem;">
-            <button type="button" class="btn btn-secondary" onclick="simulateAgent('support')" style="justify-content:flex-start; text-align:left; font-size:0.85rem; padding:0.6rem 0.85rem;">
-              <i class="fa-solid fa-headset" style="color:var(--accent-blue);"></i> Customer Support
-            </button>
-            <button type="button" class="btn btn-secondary" onclick="simulateAgent('refund')" style="justify-content:flex-start; text-align:left; font-size:0.85rem; padding:0.6rem 0.85rem;">
-              <i class="fa-solid fa-money-bill-transfer" style="color:var(--accent-emerald);"></i> Financial Refund
-            </button>
-            <button type="button" class="btn btn-secondary" onclick="simulateAgent('triage')" style="justify-content:flex-start; text-align:left; font-size:0.85rem; padding:0.6rem 0.85rem;">
-              <i class="fa-solid fa-user-doctor" style="color:var(--accent-rose);"></i> Healthcare Triage
-            </button>
-            <button type="button" class="btn btn-secondary" onclick="simulateAgent('trading')" style="justify-content:flex-start; text-align:left; font-size:0.85rem; padding:0.6rem 0.85rem;">
-              <i class="fa-solid fa-chart-line" style="color:var(--accent-amber);"></i> Automated Trading
+          <div style="display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap;">
+            <div>
+              <label style="display:block; font-size:0.8rem; color:var(--text-muted); margin-bottom:0.3rem;">Domain Vertical</label>
+              <select id="sim-domain" style="background:var(--bg-dark); border:1px solid var(--border-color); color:white; padding:0.55rem 0.85rem; border-radius:8px; font-size:0.85rem;">
+                <option value="customer_support">🎧 Customer Support</option>
+                <option value="fintech">💳 Fintech & Payments</option>
+                <option value="healthcare">⚕️ Healthcare Clinical</option>
+                <option value="hr">💼 HR & Payroll</option>
+              </select>
+            </div>
+            <div>
+              <label style="display:block; font-size:0.8rem; color:var(--text-muted); margin-bottom:0.3rem;">Complexity Level</label>
+              <select id="sim-complexity" style="background:var(--bg-dark); border:1px solid var(--border-color); color:white; padding:0.55rem 0.85rem; border-radius:8px; font-size:0.85rem;">
+                <option value="simple">🟢 Simple (Clean Baseline)</option>
+                <option value="complex">🟡 Complex (Multi-tool & Trace Errors)</option>
+                <option value="incomplete">🔴 Incomplete (Defects & Missing Fields)</option>
+              </select>
+            </div>
+            <button type="button" class="btn btn-secondary" onclick="runBackendSimulator()" style="font-size:0.85rem; padding:0.55rem 1.1rem;">
+              <i class="fa-solid fa-bolt" style="color:var(--accent-amber);"></i> Run Simulator Engine
             </button>
           </div>
         </div>
@@ -705,144 +713,42 @@
   <script>
     let currentAgentId = "agent-cs-001";
 
-    // Agent Simulator Profiles
-    const SIMULATOR_PROFILES = {
-      support: {
-        config: {
-          agent_id: "agent-cs-001",
-          agent_name: "Customer Support Agent",
-          llm: { provider: "Groq", model_name: "llama-3.3-70b-versatile", version: "3.3", hosting: "Groq Cloud" },
-          decision_authority: "advisory",
-          risk_classification: "limited",
-          data_sources: [
-            { name: "Customer Ticket DB", data_type: "Postgres", sensitivity: "internal" },
-            { name: "Knowledge Base Docs", data_type: "Vector Index", sensitivity: "public" }
-          ],
-          human_oversight: [{ description: "Human agent reviews and approves response before sending.", trigger: "Urgent tickets" }],
-          incident_contact: { name: "AI Ops Escalation Team", email: "ai-ops@example.com", escalation_path: "Slack #ai-alerts" }
-        },
-        manifest: {
-          tools: [
-            { name: "ticket_reader", description: "Fetches customer support tickets", operations: ["read"], data_accessed: ["tickets"] },
-            { name: "knowledge_search", description: "Queries vector search", operations: ["search"], data_accessed: ["kb_docs"] },
-            { name: "reply_draft_writer", description: "Saves draft responses", operations: ["write"], data_accessed: ["crm_drafts"] }
-          ]
-        },
-        trace: {
-          trace_id: "tr-support-001",
-          execution_steps: [
-            { step: 1, event: "user_prompt", content: "Customer T-8820 asks about refund SLA." },
-            { step: 2, event: "tool_call", tool_name: "ticket_reader", input: { ticket_id: "T-8820" }, output: { status: "open" } },
-            { step: 3, event: "llm_completion", content: "Drafted explanation of 3-5 days refund SLA." }
-          ]
-        }
-      },
-      refund: {
-        config: {
-          agent_id: "agent-fin-002",
-          agent_name: "Financial Refund Autonomous Agent",
-          llm: { provider: "Groq", model_name: "llama-3.3-70b-versatile", version: "3.3", hosting: "Groq Cloud" },
-          decision_authority: "autonomous",
-          risk_classification: "high",
-          data_sources: [
-            { name: "Banking Ledger API", data_type: "REST API", sensitivity: "confidential" },
-            { name: "Customer PII Database", data_type: "SQL", sensitivity: "PII" }
-          ],
-          human_oversight: [{ description: "Transactions above $1,000 hold for CFO approval.", trigger: "Amount > $1000" }],
-          incident_contact: { name: "Financial Risk Team", email: "fin-risk@example.com", escalation_path: "PagerDuty Tier 1" }
-        },
-        manifest: {
-          tools: [
-            { name: "bank_refund_api", description: "Executes direct bank transfers", operations: ["execute", "write"], data_accessed: ["ledger_accounts"] },
-            { name: "fraud_score_check", description: "Evaluates transaction fraud risk", operations: ["read"], data_accessed: ["fraud_logs"] }
-          ]
-        },
-        trace: {
-          trace_id: "tr-refund-002",
-          execution_steps: [
-            { step: 1, event: "user_prompt", content: "Process refund of $450 for order #9921." },
-            { step: 2, event: "tool_call", tool_name: "fraud_score_check", input: { amount: 450 }, output: { score: 0.02, status: "low_risk" } },
-            { step: 3, event: "tool_call", tool_name: "bank_refund_api", input: { amount: 450 }, output: { transaction_id: "tx_8839201" } }
-          ]
-        }
-      },
-      triage: {
-        config: {
-          agent_id: "agent-med-003",
-          agent_name: "Healthcare Clinical Triage Agent",
-          llm: { provider: "Groq", model_name: "llama-3.3-70b-versatile", version: "3.3", hosting: "Groq Cloud" },
-          decision_authority: "advisory",
-          risk_classification: "high",
-          data_sources: [
-            { name: "Electronic Health Records (EHR)", data_type: "FHIR API", sensitivity: "PII" }
-          ],
-          human_oversight: [{ description: "Licensed physician must sign off on triage recommendation.", trigger: "All non-routine triage" }],
-          incident_contact: { name: "Clinical Safety Officer", email: "safety@hospital.org", escalation_path: "Hospital Emergency Line" }
-        },
-        manifest: {
-          tools: [
-            { name: "ehr_reader", description: "Retrieves patient medical history", operations: ["read"], data_accessed: ["medical_history"] },
-            { name: "symptom_analyzer", description: "Evaluates symptom urgency scores", operations: ["execute"], data_accessed: ["clinical_rules"] }
-          ]
-        },
-        trace: {
-          trace_id: "tr-med-003",
-          execution_steps: [
-            { step: 1, event: "user_prompt", content: "Patient reports acute chest tightness and shortness of breath." },
-            { step: 2, event: "tool_call", tool_name: "symptom_analyzer", input: { symptoms: ["chest tightness"] }, output: { urgency: "high" } },
-            { step: 3, event: "llm_completion", content: "Flagged for immediate ER evaluation; routed to attending physician." }
-          ]
-        }
-      },
-      trading: {
-        config: {
-          agent_id: "agent-trade-004",
-          agent_name: "Automated Algorithmic Trading Agent",
-          llm: { provider: "Groq", model_name: "llama-3.3-70b-versatile", version: "3.3", hosting: "Groq Cloud" },
-          decision_authority: "autonomous",
-          risk_classification: "high",
-          data_sources: [
-            { name: "Market Live Ticker Feed", data_type: "WebSocket", sensitivity: "public" }
-          ],
-          human_oversight: [{ description: "Automatic circuit breaker halts trading if portfolio drawdown exceeds 2%.", trigger: "Drawdown > 2%" }],
-          incident_contact: { name: "Trading Desk Controller", email: "trading-ops@fund.com", escalation_path: "Direct Phone Line" }
-        },
-        manifest: {
-          tools: [
-            { name: "market_order_executor", description: "Places live stock/crypto market orders", operations: ["execute", "write"], data_accessed: ["brokerage_account"] }
-          ]
-        },
-        trace: {
-          trace_id: "tr-trade-004",
-          execution_steps: [
-            { step: 1, event: "user_prompt", content: "Signal detected: Buy 500 shares of NVDA at market." },
-            { step: 2, event: "tool_call", tool_name: "market_order_executor", input: { symbol: "NVDA", qty: 500 }, output: { filled: 500, price: 128.50 } }
-          ]
-        }
+    // Backend Simulator Runner (calls /simulator/synthetic)
+    async function runBackendSimulator() {
+      const domain = document.getElementById('sim-domain').value;
+      const complexity = document.getElementById('sim-complexity').value;
+
+      try {
+        const res = await fetch(`/simulator/synthetic?domain=${domain}&complexity=${complexity}`);
+        if (!res.ok) throw new Error('Failed to fetch synthetic data from app/simulator.py');
+        
+        const data = await res.json();
+        
+        const configFile  = new File([JSON.stringify(data.agent_config, null, 2)], `${data.agent_config.agent_id}_config.json`, { type: "application/json" });
+        const manifestFile = new File([JSON.stringify(data.tool_manifest, null, 2)], `${data.agent_config.agent_id}_manifest.json`, { type: "application/json" });
+        const traceFile    = new File([JSON.stringify(data.run_trace, null, 2)], `${data.agent_config.agent_id}_trace.json`, { type: "application/json" });
+
+        const setFileInput = (inputId, statusId, file) => {
+          const dt = new DataTransfer();
+          dt.items.add(file);
+          const input = document.getElementById(inputId);
+          input.files = dt.files;
+          document.getElementById(statusId).innerText = "✓ Synthetic " + file.name;
+        };
+
+        setFileInput('config-file', 'config-status', configFile);
+        setFileInput('manifest-file', 'manifest-status', manifestFile);
+        setFileInput('trace-file', 'trace-status', traceFile);
+
+        let desc = "";
+        if (complexity === "simple") desc = "Clean baseline configuration (100% complete).";
+        if (complexity === "complex") desc = "Multi-tool setup with trace errors (exercises Groq LLaMA 3.3 limitations inference).";
+        if (complexity === "incomplete") desc = "Injected missing fields & invalid email (exercises Completeness Checker warnings).";
+
+        alert(`🤖 app/simulator.py Synthetic Engine Success!\n\nDomain: ${domain.toUpperCase()}\nComplexity: ${complexity.toUpperCase()}\n\nNote: ${desc}\n\nClick 'Generate & Persist Card' to run the evaluation pipeline!`);
+      } catch (err) {
+        alert('Error running simulator: ' + err.message);
       }
-    };
-
-    function simulateAgent(profileKey) {
-      const profile = SIMULATOR_PROFILES[profileKey];
-      if (!profile) return;
-
-      const configFile = new File([JSON.stringify(profile.config, null, 2)], `${profile.config.agent_id}_config.json`, { type: "application/json" });
-      const manifestFile = new File([JSON.stringify(profile.manifest, null, 2)], `${profile.config.agent_id}_manifest.json`, { type: "application/json" });
-      const traceFile = new File([JSON.stringify(profile.trace, null, 2)], `${profile.config.agent_id}_trace.json`, { type: "application/json" });
-
-      const setFileInput = (inputId, statusId, file) => {
-        const dt = new DataTransfer();
-        dt.items.add(file);
-        const input = document.getElementById(inputId);
-        input.files = dt.files;
-        document.getElementById(statusId).innerText = "✓ Simulated " + file.name;
-      };
-
-      setFileInput('config-file', 'config-status', configFile);
-      setFileInput('manifest-file', 'manifest-status', manifestFile);
-      setFileInput('trace-file', 'trace-status', traceFile);
-
-      alert(`🤖 Simulator Loaded Profile: '${profile.config.agent_name}'!\n\nAll 3 JSON files have been generated and attached. Click 'Generate & Persist Card' to run the evaluation!`);
     }
 
     // Switch Tabs
