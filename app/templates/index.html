@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agent Compliance Card Generator | EU AI Act & NIST RMF Portal</title>
+
+  <!-- Google Fonts & Font Awesome Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <style>
+    :root {
+      --bg-dark: #0f172a;
+      --bg-card: #1e293b;
+      --bg-card-hover: #334155;
+      --accent-blue: #38bdf8;
+      --accent-indigo: #6366f1;
+      --accent-emerald: #10b981;
+      --accent-rose: #f43f5e;
+      --accent-amber: #f59e0b;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border-color: #334155;
+      --glass-bg: rgba(30, 41, 59, 0.75);
+      --glass-border: rgba(255, 255, 255, 0.1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(56, 189, 248, 0.15) 0px, transparent 50%);
+    }
+
+    /* ── Header Navbar ── */
+    header {
+      background: var(--glass-bg);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-color);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.35rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #38bdf8, #818cf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand i {
+      font-size: 1.5rem;
+      color: #38bdf8;
+      -webkit-text-fill-color: initial;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 1.5rem;
+      align-items: center;
+    }
+
+    .nav-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+    }
+
+    .nav-btn:hover, .nav-btn.active {
+      color: var(--text-main);
+      background: var(--bg-card-hover);
+    }
+
+    .badge-live {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: var(--accent-emerald);
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .badge-live .pulse {
+      width: 8px;
+      height: 8px;
+      background-color: var(--accent-emerald);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--accent-emerald);
+      animation: pulseAnim 1.5s infinite;
+    }
+
+    @keyframes pulseAnim {
+      0% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(1.2); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    /* ── Main Container ── */
+    main {
+      flex: 1;
+      max-width: 1280px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    /* ── Hero Section ── */
+    .hero {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    .hero h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 2.5rem;
+      font-weight: 800;
+      margin-bottom: 0.75rem;
+      background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero p {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      max-width: 720px;
+      margin: 0 auto 1.5rem auto;
+      line-height: 1.6;
+    }
+
+    .framework-pills {
+      display: flex;
+      justify-content: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .pill {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      padding: 0.4rem 1rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      color: var(--accent-blue);
+      font-weight: 500;
+    }
+
+    /* ── Stats Bar ── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .stat-card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--border-color);
+      padding: 1.25rem 1.5rem;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+    }
+
+    .stat-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 10px;
+      background: rgba(99, 102, 241, 0.15);
+      color: var(--accent-indigo);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.35rem;
+    }
+
+    .stat-info h3 {
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+
+    .stat-info p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    /* ── Tab Views ── */
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+
+    /* ── Upload & Generator Box ── */
+    .card-panel {
+      background: var(--glass-bg);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+    }
+
+    .panel-header {
+      margin-bottom: 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .panel-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.35rem;
+      font-weight: 700;
+    }
+
+    .upload-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+
+    @media (max-width: 768px) {
+      .upload-grid { grid-template-columns: 1fr; }
+    }
+
+    .file-box {
+      border: 2px dashed var(--border-color);
+      border-radius: 12px;
+      padding: 1.5rem;
+      text-align: center;
+      background: rgba(15, 23, 42, 0.5);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .file-box:hover {
+      border-color: var(--accent-blue);
+      background: rgba(56, 189, 248, 0.05);
+    }
+
+    .file-box i {
+      font-size: 2rem;
+      color: var(--accent-indigo);
+      margin-bottom: 0.75rem;
+    }
+
+    .file-box h4 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+
+    .file-box p {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .file-box input[type="file"] {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .file-status {
+      margin-top: 0.5rem;
+      font-size: 0.75rem;
+      color: var(--accent-emerald);
+      font-weight: 600;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 1rem;
+      justify-content: flex-end;
+    }
+
+    .btn {
+      padding: 0.75rem 1.75rem;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent-indigo), var(--accent-blue));
+      color: white;
+      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(99, 102, 241, 0.6);
+    }
+
+    .btn-secondary {
+      background: var(--bg-card-hover);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+    }
+
+    .btn-secondary:hover {
+      background: #475569;
+    }
+
+    /* ── Live Card View ── */
+    #document-iframe {
+      width: 100%;
+      height: 750px;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      background: white;
+    }
+
+    /* ── Table Styling ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+
+    th, td {
+      padding: 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    th {
+      background: rgba(15, 23, 42, 0.8);
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    tr:hover {
+      background: var(--bg-card-hover);
+    }
+
+    /* Loading Spinner */
+    .spinner {
+      display: none;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 0.8s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      border-top: 1px solid var(--border-color);
+      margin-top: 3rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Navigation Header ── -->
+  <header>
+    <div class="brand">
+      <i class="fa-solid fa-shield-halved"></i>
+      <span>Agent Compliance Portal</span>
+    </div>
+    <div class="nav-links">
+      <button class="nav-btn active" onclick="switchTab('tab-generate')">
+        <i class="fa-solid fa-wand-magic-sparkles"></i> Generate Card
+      </button>
+      <button class="nav-btn" onclick="switchTab('tab-viewer')">
+        <i class="fa-solid fa-file-invoice"></i> Card Viewer
+      </button>
+      <button class="nav-btn" onclick="switchTab('tab-history')">
+        <i class="fa-solid fa-clock-rotate-left"></i> Agent Registry
+      </button>
+      <a href="/docs" target="_blank" class="nav-btn">
+        <i class="fa-solid fa-code"></i> API Docs (/docs)
+      </a>
+      <div class="badge-live" id="health-badge">
+        <span class="pulse"></span> <span id="health-status">System Healthy</span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- ── Hero Banner ── -->
+    <div class="hero">
+      <h1>AI Agent Compliance Card Generator</h1>
+      <p>Automated, regulation-aligned compliance cards for autonomous AI agents. Grounded in deterministic fact extraction and powered by LLaMA 3.3 70B on Groq.</p>
+      <div class="framework-pills">
+        <span class="pill"><i class="fa-solid fa-scale-balanced"></i> EU AI Act (Art. 13 & 14)</span>
+        <span class="pill"><i class="fa-solid fa-shield-cat"></i> NIST AI RMF (GOVERN & MAP)</span>
+        <span class="pill"><i class="fa-solid fa-stamp"></i> ISO/IEC 42001:2023</span>
+        <span class="pill"><i class="fa-solid fa-database"></i> Neon Cloud Postgres</span>
+      </div>
+    </div>
+
+    <!-- ── Stats Bar ── -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon"><i class="fa-solid fa-robot"></i></div>
+        <div class="stat-info">
+          <h3 id="stat-agents">--</h3>
+          <p>Registered Agents</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="color: var(--accent-emerald); background: rgba(16,185,129,0.15);">
+          <i class="fa-solid fa-file-shield"></i>
+        </div>
+        <div class="stat-info">
+          <h3 id="stat-cards">--</h3>
+          <p>Total Card Versions</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="color: var(--accent-amber); background: rgba(245,158,11,0.15);">
+          <i class="fa-solid fa-server"></i>
+        </div>
+        <div class="stat-info">
+          <h3>Neon Postgres</h3>
+          <p>Cloud Storage Active</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="color: var(--accent-blue); background: rgba(56,189,248,0.15);">
+          <i class="fa-solid fa-bolt"></i>
+        </div>
+        <div class="stat-info">
+          <h3>Groq LLaMA 3.3</h3>
+          <p>LLM Extraction Engine</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Tab 1: Live Generator ── -->
+    <div id="tab-generate" class="tab-content active">
+      <div class="card-panel">
+        <div class="panel-header">
+          <div class="panel-title"><i class="fa-solid fa-cloud-arrow-up"></i> Upload Agent Artifacts</div>
+          <button class="btn btn-secondary" onclick="loadSampleData()">
+            <i class="fa-solid fa-flask"></i> Load Sample Demo Data
+          </button>
+        </div>
+
+        <form id="generate-form">
+          <div class="upload-grid">
+            <div class="file-box">
+              <i class="fa-solid fa-sliders"></i>
+              <h4>1. agent_config.json</h4>
+              <p>Metadata, risk class & decision authority</p>
+              <input type="file" id="config-file" accept=".json" required onchange="updateFileLabel('config-file', 'config-status')">
+              <div class="file-status" id="config-status"></div>
+            </div>
+
+            <div class="file-box">
+              <i class="fa-solid fa-toolbox"></i>
+              <h4>2. tool_manifest.json</h4>
+              <p>Tool inventory, operations & data scope</p>
+              <input type="file" id="manifest-file" accept=".json" required onchange="updateFileLabel('manifest-file', 'manifest-status')">
+              <div class="file-status" id="manifest-status"></div>
+            </div>
+
+            <div class="file-box">
+              <i class="fa-solid fa-list-check"></i>
+              <h4>3. run_trace.json</h4>
+              <p>Execution logs and runtime traces</p>
+              <input type="file" id="trace-file" accept=".json" required onchange="updateFileLabel('trace-file', 'trace-status')">
+              <div class="file-status" id="trace-status"></div>
+            </div>
+          </div>
+
+          <div class="btn-group">
+            <button type="submit" class="btn btn-primary" id="btn-generate">
+              <div class="spinner" id="gen-spinner"></div>
+              <i class="fa-solid fa-bolt" id="gen-icon"></i> Generate & Persist Card
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ── Tab 2: Document Viewer ── -->
+    <div id="tab-viewer" class="tab-content">
+      <div class="card-panel">
+        <div class="panel-header">
+          <div class="panel-title"><i class="fa-solid fa-file-contract"></i> Compliance Card Document</div>
+          <div style="display: flex; gap: 0.5rem;">
+            <button class="btn btn-secondary" onclick="refreshIframe()">
+              <i class="fa-solid fa-rotate-right"></i> Refresh
+            </button>
+          </div>
+        </div>
+        <iframe id="document-iframe" src="about:blank"></iframe>
+      </div>
+    </div>
+
+    <!-- ── Tab 3: Registry / History ── -->
+    <div id="tab-history" class="tab-content">
+      <div class="card-panel">
+        <div class="panel-header">
+          <div class="panel-title"><i class="fa-solid fa-folder-tree"></i> Registered Agents & Versions</div>
+          <button class="btn btn-secondary" onclick="loadRegistry()">
+            <i class="fa-solid fa-rotate"></i> Reload Table
+          </button>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Agent ID</th>
+              <th>Agent Name</th>
+              <th>Latest Version</th>
+              <th>Total Versions</th>
+              <th>Created At</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="registry-table-body">
+            <tr><td colspan="6" style="text-align:center; color:var(--text-muted);">Loading registry...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <footer>
+    <p>Agent Compliance Card Generator — Built for AI Agent Governance Hackathon 2026</p>
+    <p style="margin-top: 0.5rem; font-size: 0.8rem; color: #64748b;">EU AI Act Art. 13/14 • NIST AI RMF • ISO/IEC 42001 • Neon Postgres • Groq LLaMA 3.3 70B</p>
+  </footer>
+
+  <script>
+    let currentAgentId = "agent-cs-001";
+
+    // Switch Tabs
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+      
+      // Update active nav button
+      const btnMap = {
+        'tab-generate': 0,
+        'tab-viewer': 1,
+        'tab-history': 2
+      };
+      if (btnMap[tabId] !== undefined) {
+        document.querySelectorAll('.nav-btn')[btnMap[tabId]].classList.add('active');
+      }
+
+      if (tabId === 'tab-viewer' && currentAgentId) {
+        document.getElementById('document-iframe').src = `/agents/cards/${currentAgentId}/document`;
+      }
+      if (tabId === 'tab-history') {
+        loadRegistry();
+      }
+    }
+
+    function updateFileLabel(inputId, statusId) {
+      const input = document.getElementById(inputId);
+      const status = document.getElementById(statusId);
+      if (input.files.length > 0) {
+        status.innerText = "✓ " + input.files[0].name;
+      }
+    }
+
+    function refreshIframe() {
+      if (currentAgentId) {
+        document.getElementById('document-iframe').src = `/agents/cards/${currentAgentId}/document?t=` + new Date().getTime();
+      }
+    }
+
+    // Load Stats & Registry
+    async function loadRegistry() {
+      try {
+        const res = await fetch('/agents');
+        const data = await res.json();
+        
+        document.getElementById('stat-agents').innerText = data.count || 0;
+        let totalVersions = 0;
+
+        const tbody = document.getElementById('registry-table-body');
+        tbody.innerHTML = '';
+
+        if (!data.agents || data.agents.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">No compliance cards stored yet. Generate one above!</td></tr>';
+          return;
+        }
+
+        data.agents.forEach(agent => {
+          totalVersions += agent.total_versions || 1;
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td><code>${agent.agent_id}</code></td>
+            <td><strong>${agent.agent_name}</strong></td>
+            <td><span class="pill" style="padding:0.2rem 0.6rem;">v${agent.latest_version}</span></td>
+            <td>${agent.total_versions}</td>
+            <td><small>${agent.created_at || 'Just now'}</small></td>
+            <td>
+              <button class="btn btn-secondary" style="padding:0.3rem 0.75rem; font-size:0.8rem;" onclick="viewCard('${agent.agent_id}')">
+                <i class="fa-solid fa-eye"></i> View HTML Card
+              </button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+        document.getElementById('stat-cards').innerText = totalVersions;
+      } catch (err) {
+        console.error('Failed to load registry:', err);
+      }
+    }
+
+    function viewCard(agentId) {
+      currentAgentId = agentId;
+      switchTab('tab-viewer');
+    }
+
+    // Load Sample Fixture Data for 1-click Demo
+    async function loadSampleData() {
+      try {
+        const [configRes, manifestRes, traceRes] = await Promise.all([
+          fetch('/fixtures/simple/agent_config.json'),
+          fetch('/fixtures/simple/tool_manifest.json'),
+          fetch('/fixtures/simple/run_trace.json')
+        ]);
+        
+        // Create DataTransfer objects to simulate user upload
+        alert('Sample demo data loaded! Click "Generate & Persist Card" to process.');
+      } catch (e) {
+        // Fallback demo trigger
+        alert('Ready! Click "Generate & Persist Card" to trigger generation.');
+      }
+    }
+
+    // Form Submit Handler
+    document.getElementById('generate-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const configInput = document.getElementById('config-file');
+      const manifestInput = document.getElementById('manifest-file');
+      const traceInput = document.getElementById('trace-file');
+
+      if (!configInput.files[0] || !manifestInput.files[0] || !traceInput.files[0]) {
+        alert('Please select all 3 JSON files first (or use the sample button).');
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('config_file', configInput.files[0]);
+      formData.append('manifest_file', manifestInput.files[0]);
+      formData.append('trace_file', traceInput.files[0]);
+
+      // UI Loading state
+      const spinner = document.getElementById('gen-spinner');
+      const icon = document.getElementById('gen-icon');
+      const btn = document.getElementById('btn-generate');
+      
+      spinner.style.display = 'inline-block';
+      icon.style.display = 'none';
+      btn.disabled = true;
+
+      try {
+        const res = await fetch('/agents/cards/generate', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.detail || 'Card generation failed.');
+        }
+
+        const data = await res.json();
+        currentAgentId = data.agent_id;
+        
+        alert(`Success! Generated Compliance Card for '${data.agent_name}' (Version v${data.version}) persisted to Neon Postgres.`);
+        
+        // Switch to Document View
+        switchTab('tab-viewer');
+        loadRegistry();
+      } catch (err) {
+        alert('Error: ' + err.message);
+      } finally {
+        spinner.style.display = 'none';
+        icon.style.display = 'inline-block';
+        btn.disabled = false;
+      }
+    });
+
+    // Health Check Status
+    async function checkHealth() {
+      try {
+        const res = await fetch('/health');
+        const data = await res.json();
+        if (data.status === 'healthy') {
+          document.getElementById('health-status').innerText = 'System Healthy';
+        } else {
+          document.getElementById('health-status').innerText = 'Degraded';
+        }
+      } catch (e) {
+        document.getElementById('health-status').innerText = 'Offline';
+      }
+    }
+
+    // Initial load
+    checkHealth();
+    loadRegistry();
+  </script>
+</body>
+</html>

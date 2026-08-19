@@ -559,21 +559,10 @@ def diff_versions(
 # GET /
 # ══════════════════════════════════════════════════════════════════════════════
 
-@app.get("/", tags=["Operations"], summary="API root")
+@app.get("/", response_class=HTMLResponse, tags=["Operations"], summary="Agent Compliance Portal Dashboard")
 def root():
-    """Lists all available routes."""
-    return {
-        "service": "Agent Compliance Card Generator",
-        "version": "1.0.0",
-        "routes": {
-            "POST /agents/cards/generate":                    "Generate a new card (upload 3 JSON files)",
-            "GET  /agents":                                    "List all stored agents",
-            "GET  /agents/cards/{agent_id}":                  "Latest card version (JSON)",
-            "GET  /agents/cards/{agent_id}/versions/{v}":     "Specific card version (JSON)",
-            "GET  /agents/cards/{agent_id}/document":         "Card as human-readable HTML",
-            "GET  /agents/cards/{agent_id}/completeness":     "Completeness check report",
-            "GET  /agents/cards/{agent_id}/diff?from=1&to=2": "Field-by-field diff between two versions",
-            "GET  /health":                                    "Real liveness + dependency check (DB + Groq)",
-            "GET  /docs":                                      "Interactive API documentation (Swagger UI)",
-        },
-    }
+    """Serves the interactive Agent Compliance Portal website."""
+    template_path = _APP_DIR / "templates" / "index.html"
+    if template_path.exists():
+        return HTMLResponse(content=template_path.read_text(encoding="utf-8"))
+    return HTMLResponse(content="<h1>Agent Compliance Card Generator</h1><p>API is active. Visit <a href='/docs'>/docs</a>.</p>")
