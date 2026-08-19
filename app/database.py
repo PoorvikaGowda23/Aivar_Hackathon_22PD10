@@ -21,10 +21,15 @@ load_dotenv()
 # Default to SQLite for local dev; Neon/Postgres in production
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./cards.db")
 
-# SQLite requires check_same_thread=False; Postgres does not need it
-connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
+# SQLite requires check_same_thread=False; Postgres needs connect_timeout and pool settings
+connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {"connect_timeout": 10}
 
-engine = create_engine(DATABASE_URL, connect_args=connect_args)
+engine = create_engine(
+    DATABASE_URL,
+    connect_args=connect_args,
+    pool_pre_ping=True,
+    pool_recycle=300,
+)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()

@@ -121,7 +121,11 @@ class RequestIDMiddleware(BaseHTTPMiddleware):
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("startup: initialising database tables")
-    init_db()
+    try:
+        init_db()
+        logger.info("startup: database tables ready")
+    except Exception as exc:
+        logger.error("startup: database init warning", extra={"error": str(exc)})
     logger.info("startup: complete — service ready")
     yield
     logger.info("shutdown: service stopping")
