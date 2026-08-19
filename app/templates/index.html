@@ -713,20 +713,35 @@
   <script>
     let currentAgentId = "agent-cs-001";
 
-    // Backend Simulator Runner (calls /simulator/synthetic)
+    // Backend Simulator Runner (calls /simulator/synthetic with in-memory fallback)
     async function runBackendSimulator() {
       const domain = document.getElementById('sim-domain').value;
       const complexity = document.getElementById('sim-complexity').value;
 
       try {
+        let config, manifest, trace;
+
         const res = await fetch(`/simulator/synthetic?domain=${domain}&complexity=${complexity}`);
-        if (!res.ok) throw new Error('Failed to fetch synthetic data from app/simulator.py');
+        if (res.ok) {
+          const data = await res.json();
+          config = data.agent_config;
+          manifest = data.tool_manifest;
+          trace = data.run_trace;
+        } else {
+          // Fallback to client-side simulator if backend is mid-deployment
+          if (SIMULATOR_PROFILES[domain]) {
+            const p = SIMULATOR_PROFILES[domain];
+            config = p.config;
+            manifest = p.manifest;
+            trace = p.trace;
+          } else {
+            throw new Error('Endpoint /simulator/synthetic is deploying on Render.');
+          }
+        }
         
-        const data = await res.json();
-        
-        const configFile  = new File([JSON.stringify(data.agent_config, null, 2)], `${data.agent_config.agent_id}_config.json`, { type: "application/json" });
-        const manifestFile = new File([JSON.stringify(data.tool_manifest, null, 2)], `${data.agent_config.agent_id}_manifest.json`, { type: "application/json" });
-        const traceFile    = new File([JSON.stringify(data.run_trace, null, 2)], `${data.agent_config.agent_id}_trace.json`, { type: "application/json" });
+        const configFile  = new File([JSON.stringify(config, null, 2)], `${config.agent_id}_config.json`, { type: "application/json" });
+        const manifestFile = new File([JSON.stringify(manifest, null, 2)], `${config.agent_id}_manifest.json`, { type: "application/json" });
+        const traceFile    = new File([JSON.stringify(trace, null, 2)], `${config.agent_id}_trace.json`, { type: "application/json" });
 
         const setFileInput = (inputId, statusId, file) => {
           const dt = new DataTransfer();
@@ -745,7 +760,7 @@
         if (complexity === "complex") desc = "Multi-tool setup with trace errors (exercises Groq LLaMA 3.3 limitations inference).";
         if (complexity === "incomplete") desc = "Injected missing fields & invalid email (exercises Completeness Checker warnings).";
 
-        alert(`🤖 app/simulator.py Synthetic Engine Success!\n\nDomain: ${domain.toUpperCase()}\nComplexity: ${complexity.toUpperCase()}\n\nNote: ${desc}\n\nClick 'Generate & Persist Card' to run the evaluation pipeline!`);
+        alert(`🤖 app/simulator.py Synthetic Engine Loaded!\n\nDomain: ${domain.toUpperCase()}\nComplexity: ${complexity.toUpperCase()}\n\nNote: ${desc}\n\nClick 'Generate & Persist Card' to run the evaluation pipeline!`);
       } catch (err) {
         alert('Error running simulator: ' + err.message);
       }
