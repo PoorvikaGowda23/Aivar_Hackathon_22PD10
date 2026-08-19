@@ -54,50 +54,58 @@
       position: sticky;
       top: 0;
       z-index: 100;
-      padding: 1rem 2rem;
+      padding: 0.85rem 1.5rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      flex-wrap: nowrap;
+      gap: 1rem;
+      overflow-x: auto;
     }
 
     .brand {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+      gap: 0.6rem;
       font-family: 'Outfit', sans-serif;
-      font-size: 1.35rem;
+      font-size: 1.25rem;
       font-weight: 700;
+      white-space: nowrap;
       background: linear-gradient(135deg, #38bdf8, #818cf8);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
+      flex-shrink: 0;
     }
 
     .brand i {
-      font-size: 1.5rem;
+      font-size: 1.4rem;
       color: #38bdf8;
       -webkit-text-fill-color: initial;
     }
 
     .nav-links {
       display: flex;
-      gap: 1rem;
+      gap: 0.5rem;
       align-items: center;
+      flex-wrap: nowrap;
+      flex-shrink: 0;
     }
 
     .nav-btn {
       background: none;
       border: none;
       color: var(--text-muted);
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       font-weight: 500;
       cursor: pointer;
-      padding: 0.5rem 0.85rem;
+      padding: 0.45rem 0.75rem;
       border-radius: 8px;
       transition: all 0.2s ease;
       display: flex;
       align-items: center;
       gap: 0.4rem;
       text-decoration: none;
+      white-space: nowrap;
     }
 
     .nav-btn:hover, .nav-btn.active {
@@ -109,13 +117,15 @@
       background: rgba(16, 185, 129, 0.15);
       border: 1px solid rgba(16, 185, 129, 0.3);
       color: var(--accent-emerald);
-      padding: 0.25rem 0.75rem;
+      padding: 0.35rem 0.75rem;
       border-radius: 9999px;
       font-size: 0.8rem;
       font-weight: 600;
-      display: flex;
+      display: inline-flex;
       align-items: center;
       gap: 0.4rem;
+      white-space: nowrap;
+      flex-shrink: 0;
     }
 
     .badge-live .pulse {
@@ -177,10 +187,39 @@
       background: var(--bg-card);
       border: 1px solid var(--border-color);
       padding: 0.4rem 1rem;
-      border-radius: 20px;
+      border-radius: 9999px;
       font-size: 0.85rem;
       color: var(--accent-blue);
       font-weight: 500;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    /* ── Badges ── */
+    .badge-impact {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      white-space: nowrap;
+      padding: 0.35rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      line-height: 1;
+    }
+
+    .badge-warning {
+      background: rgba(244, 63, 94, 0.15);
+      color: #f43f5e;
+      border: 1px solid rgba(244, 63, 94, 0.4);
+    }
+
+    .badge-info {
+      background: rgba(148, 163, 184, 0.15);
+      color: #cbd5e1;
+      border: 1px solid rgba(148, 163, 184, 0.3);
     }
 
     /* ── Stats Bar ── */
@@ -331,6 +370,7 @@
       align-items: center;
       gap: 0.5rem;
       text-decoration: none;
+      white-space: nowrap;
     }
 
     .btn-primary {
@@ -382,6 +422,7 @@
       font-size: 0.85rem;
       text-transform: uppercase;
       letter-spacing: 0.05em;
+      white-space: nowrap;
     }
 
     tr:hover {
@@ -718,8 +759,8 @@
           for (const [field, change] of Object.entries(data.changes)) {
             const tr = document.createElement('tr');
             const regBadge = change.requires_regulatory_reassessment
-              ? '<span class="pill" style="background:rgba(244,63,94,0.2); color:#f43f5e; border:1px solid #f43f5e;">⚠️ Regulatory Impact</span>'
-              : '<span class="pill" style="background:rgba(148,163,184,0.1); color:#94a3b8;">Minor Change</span>';
+              ? '<span class="badge-impact badge-warning">⚠️ Regulatory Impact</span>'
+              : '<span class="badge-impact badge-info">Minor Change</span>';
 
             tr.innerHTML = `
               <td><code>${field}</code></td>
